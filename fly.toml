@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for 1-lively-wind-6627 on 2025-04-16T15:07:19+05:30
+# fly.toml app configuration file generated for 1-winter-forest-2649 on 2025-04-16T15:19:58+05:30
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = '1-lively-wind-6627'
+app = '1-winter-forest-2649'
 primary_region = 'bom'
 
 [build]
