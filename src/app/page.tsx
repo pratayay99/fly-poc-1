@@ -5,4 +5,4 @@ export default function Home() {
     </div>
   );
 }
-// fly launch--config fly.toml--name fp-app-1 --yes
+// fly launch --config fly.toml--name fp-app-1 --yes
