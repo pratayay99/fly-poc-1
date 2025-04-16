@@ -1,15 +1,22 @@
-# Dockerfile
-FROM node:18-alpine
+# Ignore node_modules (for Node.js apps)
+node_modules
 
-WORKDIR /app
+# Ignore build artifacts
+dist
+build
 
-COPY package*.json ./
-RUN npm install
+# Ignore Docker-related files
+Dockerfile*
+.dockerignore
 
-COPY . .
+# Ignore temporary and log files
+*.log
+*.tmp
 
-RUN npm run build
+# Ignore version control directories
+.git
+.gitignore
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+# Ignore any IDE or editor configuration files
+.vscode
+.idea

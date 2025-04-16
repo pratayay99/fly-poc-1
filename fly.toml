@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for 1-hidden-resonance-8589 on 2025-04-16T14:29:43+05:30
+# fly.toml app configuration file generated for 1-lively-wind-6627 on 2025-04-16T15:07:19+05:30
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = '1-hidden-resonance-8589'
+app = '1-lively-wind-6627'
 primary_region = 'bom'
 
 [build]
