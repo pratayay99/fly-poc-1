@@ -1,6 +1,6 @@
 # See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
 
-name: Fly Deploy
+name: Fly Deploy fp-app-1-winter-tree-7552
 on:
   push:
     branches:
