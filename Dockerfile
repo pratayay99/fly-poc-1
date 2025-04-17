@@ -1,7 +1,7 @@
 # Dockerfile
 FROM node:18-alpine
 
-# ARG APP_ENV
+ARG REACT_APP_APP_ENV
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN npm install
 
 COPY . .
 
-# ENV APP_ENV=$APP_ENV
+ENV APP_ENV=$REACT_APP_APP_ENV
 
 RUN npm run build
 
