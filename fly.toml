@@ -1,9 +1,4 @@
-# fly.toml app configuration file generated for 1-shy-morning-2695 on 2025-04-21T12:12:11+05:30
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
-app = '1-shy-morning-2695'
+app = 'fp-app'
 primary_region = 'bom'
 
 [build]
