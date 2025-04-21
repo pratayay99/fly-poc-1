@@ -3,7 +3,7 @@ export default function Home() {
     <div>
       <h1 className="text-3xl font-bold underline">Hello world changed</h1>
       <p>Env:{process.env.REACT_APP_APP_ENV}</p>
-      <p>update new pratyay</p>
+      <p>update new pratyay 5</p>
     </div>
   );
 }
