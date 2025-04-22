@@ -1,25 +1,29 @@
-# See https://fly.io/docs/app-guides/continuous-deployment-with-github-actions/
+name: Get Fly App Image
 
-name: Fly Deploy
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  deploy:
-    name: Deploy app
+  get-image:
+    name: Extract Image from Fly App Status
     runs-on: ubuntu-latest
-    concurrency: deploy-group
     steps:
-      # Get config with image info
-      - name: Get config of fp-app
-        run: flyctl status --app fp-app --json > status.json
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Get image from fly status
+        run: |
+          output=$(flyctl status --app fp-app)
+          echo "Full status output:"
+          echo "$output"
+
+          image=$(echo "$output" | grep -E 'Image\s+=' | sed -E 's/Image\s+=\s+//')
+          
+          if [ -z "$image" ]; then
+            echo "❌ Failed to extract image"
+            exit 1
+          fi
+
+          echo "✅ Image used by fp-app: $image"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      # Print the image from config
-      - name: Print image used by fp-app
-        run: |
-          image=$(jq -r '.image' config.json)
-          echo "🖼️  Image used by fp-app: $image"
