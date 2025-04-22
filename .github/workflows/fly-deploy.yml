@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy fp-app and its dependents
+    name: Deploy fp-app and dependents
     runs-on: ubuntu-latest
     concurrency: deploy-group
 
@@ -15,38 +15,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Fly.io registry
-        run: echo "${{ secrets.FLY_API_TOKEN }}" | docker login registry.fly.io -u _ -p $(cat -)
-      
       - name: Set up Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Build and push Docker image for fp-app
-        run: |
-          docker build -t registry.fly.io/fp-app:latest .
-          docker push registry.fly.io/fp-app:latest
-
-      - name: Deploy fp-app
+      - name: Deploy fp-app (main app)
         run: flyctl deploy --remote-only -a fp-app
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
 
       - name: Get list of Fly.io apps
-        id: apps
-        run: |
-          flyctl apps list --json > apps.json
+        run: flyctl apps list --json > apps.json
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Deploy other fp-app-* apps with latest image
+      - name: Deploy fp-app-* apps with latest image
         run: |
-          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-')
+          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$')
           for app in $apps; do
-            echo "Deploying $app with latest image from fp-app..."
-            flyctl deploy --image registry.fly.io/fp-app:latest --remote-only -a $app
+            echo "Deploying $app with latest fp-app image..."
+            flyctl deploy --image registry.fly.io/fp-app:latest --remote-only -a "$app"
           done
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
