@@ -30,6 +30,15 @@ jobs:
       - name: Delete .env file
         run: rm -f .env
 
+      - name: Get image used by fp-app
+        run: |
+          # Get the current image used by fp-app
+          image=$(flyctl status --app fp-app --json | jq -r '.app_version.config.image')
+          echo "Using image: $image"
+          echo "image=$image" >> $GITHUB_ENV
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: Get list of Fly.io apps
         run: flyctl apps list --json > apps.json
         env:
@@ -45,8 +54,8 @@ jobs:
           else
             # Deploy each dependent app with the latest image from fp-app
             for app in $apps; do
-              echo "🚀 Deploying $app with latest fp-app image..."
-              if ! flyctl deploy --image registry.fly.io/fp-app:latest --remote-only -a "$app"; then
+              echo "🚀 Deploying $app with latest fp-app image: $image"
+              if ! flyctl deploy --image $image --remote-only -a "$app"; then
                 echo "❌ Failed to deploy $app"
                 # Exit the loop or the job can be customized here (optional)
                 exit 1
@@ -55,3 +64,5 @@ jobs:
           fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
+          IMAGE: ${{ env.image }}
