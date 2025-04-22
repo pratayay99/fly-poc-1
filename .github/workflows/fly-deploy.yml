@@ -12,24 +12,30 @@ jobs:
     concurrency: deploy-group
 
     steps:
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Set up Fly CLI
       - name: Set up Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
+      # Create .env file from secrets
       - name: Create .env file from secrets
         run: |
           echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
 
+      # Deploy fp-app (main app) with .env
       - name: Deploy fp-app (main app) with .env
         run: flyctl deploy --remote-only -a fp-app
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # Delete .env file
       - name: Delete .env file
         run: rm -f .env
 
+      # Get the image used by fp-app
       - name: Get image used by fp-app
         run: |
           # Get the current image used by fp-app
@@ -39,11 +45,28 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # Get list of Fly.io apps
       - name: Get list of Fly.io apps
         run: flyctl apps list --json > apps.json
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # Print the image and apps found
+      - name: Print the image and dependent apps
+        run: |
+          echo "Using image: $IMAGE"
+          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$' || true)
+          
+          if [[ -z "$apps" ]]; then
+            echo "✅ No fp-app-* dependent apps found."
+          else
+            echo "Found the following dependent apps:"
+            echo "$apps"
+          fi
+        env:
+          IMAGE: ${{ env.IMAGE }}
+
+      # Deploy dependent fp-app-* apps with the latest image
       - name: Deploy dependent fp-app-* apps with latest image
         run: |
           # Get the list of apps starting with 'fp-app-' but excluding 'fp-app' itself
