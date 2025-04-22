@@ -5,16 +5,33 @@ on:
   push:
     branches:
       - main
+
 jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    concurrency: deploy-group
     steps:
       - uses: actions/checkout@v4
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
+
       - run: echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
-      - run: flyctl deploy --remote-only
+
+      - run: flyctl deploy --remote-only -a fp-app
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - run: rm -f .env
+
+      # Get config with image info
+      - name: Get config of fp-app
+        run: flyctl config show --app fp-app --json > config.json
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Print the image from config
+      - name: Print image used by fp-app
+        run: |
+          image=$(jq -r '.image' config.json)
+          echo "🖼️  Image used by fp-app: $image"
