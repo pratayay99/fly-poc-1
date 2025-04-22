@@ -35,23 +35,31 @@ jobs:
       - name: Delete .env file
         run: rm -f .env
 
-      # Get the image used by fp-app
+      # Get the status of fp-app and save it as status.json
+      - name: Get status of fp-app
+        run: |
+          flyctl status --app fp-app --json > status.json
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Get the image used by fp-app from status.json
       - name: Get image used by fp-app
         run: |
-          # Get the current image used by fp-app
-          image=$(flyctl status --app fp-app --json | jq -r '.app_version.config.image')
+          # Extract the image from status.json
+          image=$(jq -r '.config.image' status.json)
           echo "Using image: $image"
           echo "IMAGE=$image" >> $GITHUB_ENV
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # Get list of Fly.io apps
+      # Get list of Fly.io apps and save it as apps.json
       - name: Get list of Fly.io apps
-        run: flyctl apps list --json > apps.json
+        run: |
+          flyctl apps list --json > apps.json
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # Print the image and apps found
+      # Print the image and dependent apps found
       - name: Print the image and dependent apps
         run: |
           echo "Using image: $IMAGE"
@@ -88,3 +96,8 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
           IMAGE: ${{ env.IMAGE }}
+
+      # Clean up by deleting apps.json and status.json
+      - name: Clean up temporary files
+        run: |
+          rm -f apps.json status.json
