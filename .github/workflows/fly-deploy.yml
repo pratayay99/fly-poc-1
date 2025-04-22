@@ -34,3 +34,24 @@ jobs:
         run: flyctl apps list --json > apps.json
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy dependent fp-app-* apps with latest image
+        run: |
+          # Get the list of apps starting with 'fp-app-' but excluding 'fp-app' itself
+          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$' || true)
+
+          if [[ -z "$apps" ]]; then
+            echo "✅ No fp-app-* dependent apps found to update."
+          else
+            # Deploy each dependent app with the latest image from fp-app
+            for app in $apps; do
+              echo "🚀 Deploying $app with latest fp-app image..."
+              if ! flyctl deploy --image registry.fly.io/fp-app:latest --remote-only -a "$app"; then
+                echo "❌ Failed to deploy $app"
+                # Exit the loop or the job can be customized here (optional)
+                exit 1
+              fi
+            done
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
