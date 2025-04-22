@@ -18,24 +18,19 @@ jobs:
       - name: Set up Fly CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Deploy fp-app (main app)
+      - name: Create .env file from secrets
+        run: |
+          echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
+
+      - name: Deploy fp-app (main app) with .env
         run: flyctl deploy --remote-only -a fp-app
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
+
+      - name: Delete .env file
+        run: rm -f .env
 
       - name: Get list of Fly.io apps
         run: flyctl apps list --json > apps.json
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: Deploy fp-app-* apps with latest image
-        run: |
-          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$')
-          for app in $apps; do
-            echo "Deploying $app with latest fp-app image..."
-            flyctl deploy --image registry.fly.io/fp-app:latest --remote-only -a "$app"
-          done
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
