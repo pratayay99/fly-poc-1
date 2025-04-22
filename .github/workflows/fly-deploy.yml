@@ -75,7 +75,7 @@ jobs:
           else
             for app in $apps; do
               echo "🚀 Deploying $app with latest fp-app image: $IMAGE"
-              if ! flyctl deploy --image "$IMAGE" --remote-only -a "$app"; then
+              if ! flyctl deploy --image registry.fly.io/"$IMAGE" --remote-only -a "$app"; then
                 echo "❌ Failed to deploy $app"
                 exit 1
               fi
