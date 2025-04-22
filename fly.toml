@@ -1,3 +1,8 @@
+# fly.toml app configuration file generated for fp-app on 2025-04-22T10:44:48+05:30
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = 'fp-app'
 primary_region = 'bom'
 

@@ -1,8 +1,10 @@
+
 export default function Home() {
+
   return (
     <div>
       <h1 className="text-3xl font-bold underline">Hello world changed</h1>
-      <p>Env:{process.env.REACT_APP_APP_ENV}</p>
+      <p>Env:{process.env.VITE_REACT_APP_APP_ENV}</p>
       <p>update new pratyay 5</p>
     </div>
   );
