@@ -1,0 +1,103 @@
+name: Fly Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy fp-app and dependents
+    runs-on: ubuntu-latest
+    concurrency: deploy-group
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Fly CLI
+      - name: Set up Fly CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # Create .env file from secrets
+      - name: Create .env file from secrets
+        run: |
+          echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
+
+      # Deploy fp-app (main app) with .env
+      - name: Deploy fp-app (main app) with .env
+        run: flyctl deploy --remote-only -a fp-app
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Delete .env file
+      - name: Delete .env file
+        run: rm -f .env
+
+      # Get the status of fp-app and save it as status.json
+      - name: Get status of fp-app
+        run: |
+          fly status --app fp-app --json > status.json
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Get the image used by fp-app from status.json
+      - name: Get image used by fp-app
+        run: |
+          # Extract the image from status.json
+          image=$(jq -r '.config.image' status.json)
+          echo "Using image: $image"
+          echo "IMAGE=$image" >> $GITHUB_ENV
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Get list of Fly.io apps and save it as apps.json
+      - name: Get list of Fly.io apps
+        run: |
+          flyctl apps list --json > apps.json
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Print the image and dependent apps found
+      - name: Print the image and dependent apps
+        run: |
+          echo "Using image: $IMAGE"
+          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$' || true)
+          
+          if [[ -z "$apps" ]]; then
+            echo "✅ No fp-app-* dependent apps found."
+          else
+            echo "Found the following dependent apps:"
+            echo "$apps"
+          fi
+        env:
+          IMAGE: ${{ env.IMAGE }}
+
+      # Deploy dependent fp-app-* apps with the latest image
+      - name: Deploy dependent fp-app-* apps with latest image
+        run: |
+          # Get the list of apps starting with 'fp-app-' but excluding 'fp-app' itself
+          apps=$(jq -r '.[].Name' apps.json | grep '^fp-app-' | grep -v '^fp-app$' || true)
+
+          if [[ -z "$apps" ]]; then
+            echo "✅ No fp-app-* dependent apps found to update."
+          else
+            # Deploy each dependent app with the latest image from fp-app
+            for app in $apps; do
+              echo "🚀 Deploying $app with latest fp-app image: $IMAGE"
+              if ! flyctl deploy --image $IMAGE --remote-only -a "$app"; then
+                echo "❌ Failed to deploy $app"
+                exit 1
+              fi
+            done
+          fi
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          VITE_REACT_APP_APP_ENV: ${{ secrets.VITE_REACT_APP_APP_ENV }}
+          IMAGE: ${{ env.IMAGE }}
+
+      # Clean up by deleting apps.json and status.json
+      # - name: Clean up temporary files
+      #   run: |
+      #     rm -f apps.json status.json
