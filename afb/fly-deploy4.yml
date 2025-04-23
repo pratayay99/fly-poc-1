@@ -11,7 +11,7 @@ jobs:
     concurrency: deploy-group   
     steps:
       - uses: actions/checkout@v4
-
+      
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
       - run: echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
@@ -25,19 +25,10 @@ jobs:
         run: |
           IMAGE_TAG=$(flyctl status --app fp-app | grep -oP 'Image\s+=\s+\K.+' | xargs)
           echo "Deployed image tag is: $IMAGE_TAG"
-          echo "IMAGE_TAG=registry.fly.io/$IMAGE_TAG" >> $GITHUB_ENV
+          echo "IMAGE_TAG=registry.fly.io/$IMAGE_TAG" >> "$GITHUB_ENV" 
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
       - run: rm -f .env
-
       - name: Show Image Tag
         run: |
           echo "Deployed image tag is: ${{ env.IMAGE_TAG }}"
-
-      - name: Call API with Image Tag
-        run: |
-          curl -X POST https://6003-103-220-210-16.ngrok-free.app/github-subapp-deploy \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.YOUR_API_KEY }}" \
-            -d '{"imageTag": "${{ env.IMAGE_TAG }}"}'
