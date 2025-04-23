@@ -5,7 +5,7 @@ export default function Home() {
     <div>
       <h1 className="text-3xl font-bold underline">Hello world Updated 😊</h1>
       <p>Env:{process.env.VITE_REACT_APP_APP_ENV}</p>
-      <p>update new pratyay 4okjn10</p>
+      <p>update new pratyay ok</p>
     </div>
   );
 }
