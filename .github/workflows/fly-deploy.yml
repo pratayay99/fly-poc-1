@@ -17,7 +17,7 @@ jobs:
       - name: Fetch env variables from external API
         run: |
           echo "Fetching env variables from API..."
-          curl -s https://6003-103-220-210-16.ngrok-free.app/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
+          curl -s https://fp-node-app-1.fly.dev/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
           echo "Generated .env file:"
           cat .env
 
@@ -26,7 +26,6 @@ jobs:
         run: |
           echo "Deploying app..."
           flyctl deploy --remote-only 2>&1 | tee /tmp/deploy.log
-          # Extract image tag like registry.fly.io/fp-app:deployment-01JSKKV3VYFER3MYWRXQS3N2VD
           IMAGE_TAG=$(grep -oP 'registry\.fly\.io/fp-app:deployment-[A-Za-z0-9]+' /tmp/deploy.log | head -n 1)
           echo "Deployed image tag: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
@@ -42,7 +41,7 @@ jobs:
       - name: Call API with Image Tag
         run: |
           echo "Calling API with image tag: ${{ env.IMAGE_TAG }}"
-          curl -X POST https://6003-103-220-210-16.ngrok-free.app/github-subapp-deploy \
+          curl -X POST https://fp-node-app-1.fly.dev/github-subapp-deploy \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.YOUR_API_KEY }}" \
             -d '{"imageTag": "${{ env.IMAGE_TAG }}"}'
