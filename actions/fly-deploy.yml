@@ -8,18 +8,13 @@ jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    concurrency: deploy-group
+    concurrency: deploy-group   
     steps:
       - uses: actions/checkout@v4
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Fetch env variables from external API
-        run: |
-          echo "Fetching env variables from API..."
-          curl -s https://6003-103-220-210-16.ngrok-free.app/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
-          echo "Generated .env file:"
-          cat .env
+      - run: echo "VITE_REACT_APP_APP_ENV=${{ secrets.VITE_REACT_APP_APP_ENV }}" > .env
 
       - run: flyctl deploy --remote-only
         env:
