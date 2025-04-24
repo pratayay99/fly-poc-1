@@ -24,8 +24,11 @@ jobs:
       - name: Deploy app and capture deployed image
         id: deploy
         run: |
-          # Deploy the app and capture the image name from the logs
-          IMAGE_TAG=$(flyctl deploy --remote-only 2>&1 | tee /tmp/deploy.log | grep -oP 'Image:\s+\K.+' | xargs)
+          echo "Deploying app..."
+          # Run the deployment and capture logs to ensure they are displayed
+          flyctl deploy --remote-only 2>&1 | tee /tmp/deploy.log
+          # Extract the full image URL from the deployment logs
+          IMAGE_TAG=$(grep -oP 'image:\s+registry.fly.io/[^:]+:[^\s]+' /tmp/deploy.log | xargs)
           echo "Deployed image tag: $IMAGE_TAG"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         env:
@@ -39,6 +42,7 @@ jobs:
 
       - name: Call API with Image Tag
         run: |
+          echo "Calling API with image tag: ${{ env.IMAGE_TAG }}"
           curl -X POST https://6003-103-220-210-16.ngrok-free.app/github-subapp-deploy \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.YOUR_API_KEY }}" \
