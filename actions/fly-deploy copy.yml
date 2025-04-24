@@ -14,12 +14,12 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      # - name: Fetch env variables from external API
-      #   run: |
-      #     echo "Fetching env variables from API..."
-      #     curl -s https://fp-node-app-1.fly.dev/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
-      #     echo "Generated .env file:"
-      #     cat .env
+      - name: Fetch env variables from external API
+        run: |
+          echo "Fetching env variables from API..."
+          curl -s https://fp-node-app-1.fly.dev/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
+          echo "Generated .env file:"
+          cat .env
 
       - name: Deploy app and capture deployed image
         id: deploy
