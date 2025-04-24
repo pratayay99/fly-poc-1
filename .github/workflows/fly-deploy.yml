@@ -21,22 +21,19 @@ jobs:
           echo "Generated .env file:"
           cat .env
 
-      - run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: Get current deployed image tag
-        id: get_image
+      - name: Deploy app and capture deployed image
+        id: deploy
         run: |
-          IMAGE_TAG=$(flyctl status --app fp-app | grep -oP 'Image\s+=\s+\K.+' | xargs)
-          echo "Deployed image tag is: $IMAGE_TAG"
-          echo "IMAGE_TAG=registry.fly.io/$IMAGE_TAG" >> $GITHUB_ENV
+          # Deploy the app and capture the image name from the logs
+          IMAGE_TAG=$(flyctl deploy --remote-only 2>&1 | tee /tmp/deploy.log | grep -oP 'Image:\s+\K.+' | xargs)
+          echo "Deployed image tag: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       - run: rm -f .env
 
-      - name: Show Image Tag
+      - name: Show Deployed Image Tag
         run: |
           echo "Deployed image tag is: ${{ env.IMAGE_TAG }}"
 
