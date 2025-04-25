@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: deploy-group
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
 
-      # - name: Fetch env variables from external API
-      #   run: |
-      #     echo "Fetching env variables from API..."
-      #     curl -s https://fp-node-app-1.fly.dev/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
-      #     echo "Generated .env file:"
-      #     cat .env
+      - name: Fetch env variables from external API
+        run: |
+          echo "Fetching env variables from API..."
+          curl -s https://1-bitter-snowflake-5377.fly.dev/get-envs/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
+          echo "Generated .env file:"
+          cat .env
 
       - name: Deploy app and capture deployed image
         id: deploy
@@ -41,7 +41,7 @@ jobs:
       - name: Call API with Image Tag
         run: |
           echo "Calling API with image tag: ${{ env.IMAGE_TAG }}"
-          curl -X POST https://fp-node-app-1.fly.dev/github-subapp-deploy \
+          curl -X POST https://1-bitter-snowflake-5377.fly.dev/get-envs/github-subapp-deploy \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.YOUR_API_KEY }}" \
             -d '{"imageTag": "${{ env.IMAGE_TAG }}"}'
