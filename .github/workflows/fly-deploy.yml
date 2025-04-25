@@ -42,7 +42,7 @@ jobs:
       - name: Call API with Image Tag
         run: |
           echo "Calling API with image tag: ${{ env.IMAGE_TAG }}"
-          curl -X POST https://1-bitter-snowflake-5377.fly.dev/get-envs/github-subapp-deploy \
+          curl -X POST https://1-bitter-snowflake-5377.fly.dev/github-subapp-deploy \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.YOUR_API_KEY }}" \
             -d '{"imageTag": "${{ env.IMAGE_TAG }}"}'
