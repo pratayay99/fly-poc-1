@@ -17,9 +17,10 @@ jobs:
       - name: Fetch env variables from external API
         run: |
           echo "Fetching env variables from API..."
-          curl -s https://1-bitter-snowflake-5377.fly.dev/get-envs/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
+          curl -s https://1-bitter-snowflake-5377.fly.dev/get-envs | jq -r '.[] | "\(.key)=\(.value)"' > .env
           echo "Generated .env file:"
           cat .env
+
 
       - name: Deploy app and capture deployed image
         id: deploy
